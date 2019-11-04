@@ -29,9 +29,63 @@ ordersDF.groupby('Order.Priority').mean()
 ordersDF['month'] = pd.DatetimeIndex(ordersDF['Order.Date']).month
 ordersDF.groupby('month').mean()
 
+# 2 - 1: group by month and sum it up to graph barplot (B)
+MonthGroup = ordersDF.groupby('month').sum()
+MonthGroup['month'] = MonthGroup.index
+MonthGroup
+sns.barplot(x='month', y ='Quantity', data = MonthGroup)
+
+# 2 - 2: group by month and category, sum it up and graph barplot (B)
+Monthcat = ordersDF.groupby(['Category', 'month']).sum()
+Monthcat= Monthcat.reset_index()
+Monthcat
+sns.barplot(x='month', y ='Quantity', hue= 'Category',data = Monthcat)
+
+# 2 - 2 this one is better? : group by month and category, sum it up and graph barplot (B)
+sns.barplot(x='Category', y ='Quantity', hue= 'month',data = Monthcat)
+
 #plot month to see if there is seasonality
 sns.barplot(x='month', y='Quantity', data=ordersDF)
 ordersDF['monYr'] = pd.to_datetime(ordersDF['Order.Date']).dt.to_period('M')
 
 #Convert Order Date to date time object check seasonality by day,month,year -- can we see an increase in Order amounts
-ordersDF['Order.Date']= pd.to_datetime(ordersDF['Order.Date']) 
+#ordersDF['Order.Date']= pd.to_datetime(ordersDF['Order.Date']) 
+
+#Format Order Data to proper time series format
+ordersDF['Order.Date']= pd.to_datetime(ordersDF['Order.Date'], format = '%m/%d/%y') 
+
+#Make copy of ordersDF to plot Order date and Quantity
+ordersDF2 = ordersDF[['Order.Date','Quantity']].copy(deep=True)
+
+#plot seasonality of all data
+ordersDF2.resample('M').sum().plot()
+plt.title('Sales Seasonality')
+plt.xlabel('Date')
+plt.ylabel('Quantity')
+
+#Create new DF to include categories
+ordersDFcat = ordersDF[['Order.Date','Quantity','Category']].copy(deep=True)
+ordersDFcat.set_index('Order.Date', inplace = True)
+ordersDFcat = ordersDFcat.sort_index()
+
+#Create Dfs for each of the categories
+ordersDFcatOS = ordersDFcat[ordersDFcat['Category'] == 'Office Supplies'].copy(deep=True)
+ordersDFcatFur = ordersDFcat[ordersDFcat['Category'] == 'Furniture'].copy(deep=True)
+ordersDFcatTech = ordersDFcat[ordersDFcat['Category'] == 'Technology'].copy(deep=True)
+
+#plot each category
+#Office Supplies
+ordersDFcatOS['Quantity'].resample('M').sum().plot(color = 'Blue')
+plt.title('Office Supplies Seasonality')
+plt.xlabel('Date')
+plt.ylabel('Quantity')
+#Furniture
+ordersDFcatFur['Quantity'].resample('M').sum().plot(color = 'Red')
+plt.title('Furniture Seasonality')
+plt.xlabel('Date')
+plt.ylabel('Quantity')
+#Tech
+ordersDFcatTech['Quantity'].resample('M').sum().plot(color = 'Green')
+plt.title('Technology Seasonality')
+plt.xlabel('Date')
+plt.ylabel('Quantity')
