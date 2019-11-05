@@ -97,7 +97,7 @@ merged_copy = merged[merged['Returned'] == 'Yes'].copy(deep=True)
 
 #Creating a Year column and dropping duplicate order IDs to keep 1079 returns.
 merged_copy['YEAR'] = pd.DatetimeIndex(merged_copy['Order.Date']).year
-merged_copy.drop_duplicates(subset='Order.ID', keep='first', inplace=False)
+merged_copy = merged_copy.drop_duplicates(subset='Order.ID', keep='first', inplace=False)
 len(merged_copy['Order.ID'].unique())
 
 #How much they lost per year
