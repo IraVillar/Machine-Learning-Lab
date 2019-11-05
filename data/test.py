@@ -89,3 +89,21 @@ ordersDFcatTech['Quantity'].resample('M').sum().plot(color = 'Green')
 plt.title('Technology Seasonality')
 plt.xlabel('Date')
 plt.ylabel('Quantity')
+
+#Mergeing returns with ordersDF
+returns.rename(columns = {'Order ID':'Order.ID'}, inplace = True) 
+merged = pd.merge(returns,ordersDF,how = "left", on="Order.ID")
+merged_copy = merged[merged['Returned'] == 'Yes'].copy(deep=True)
+
+#Creating a Year column and dropping duplicate order IDs to keep 1079 returns.
+merged_copy['YEAR'] = pd.DatetimeIndex(merged_copy['Order.Date']).year
+merged_copy.drop_duplicates(subset='Order.ID', keep='first', inplace=False)
+len(merged_copy['Order.ID'].unique())
+
+#How much they lost per year
+merged_copy.groupby('YEAR').sum()['Profit']
+
+#Customers who returned more than once and 5 times.
+customer_returns = merged_copy['Customer.ID'].value_counts()
+print(customer_returns[customer_returns > 1].count())
+customer_returns[customer_returns > 5].count()
