@@ -1,0 +1,62 @@
+# Uploading the Datasets 
+order = pd.read_csv('Orders.csv') 
+returns = pd.read_csv('Returns.csv')
+
+import pandas as pd 
+
+import datetime 
+
+import matplotlib as mp 
+import plotly.express as px
+import seaborn as sns 
+
+# Preprocessing of Data 
+
+# Convert to Numeric 
+# Profit 
+
+order['Profit'] = order['Profit'].str.replace('$', '') 
+order['Profit'] = order['Profit'].str.replace(',', '') 
+order['Sales'] = order['Sales'].str.replace('$', '') 
+order['Sales'] = order['Sales'].str.replace(',', '') 
+order['Profit'] = pd.to_numeric(order.Profit) 
+order['Sales'] = pd.to_numeric(order.Sales) 
+
+
+# Problem 2 
+
+# Seasonal Trend of inventory in the company? 
+order['Order.Date'] = pd.to_datetime(order['Order.Date'])
+order['Month'] = pd.DatetimeIndex(order['Order.Date']).month
+order['year'] = pd.DatetimeIndex(order['Order.Date']).year
+
+order_in = order.groupby(['Month']).sum().reset_index()
+order_in.head()
+
+time1 = order_in[['Month','Quantity']]
+
+# Graph 
+
+s = time1.plot.bar(x = 'Month', y = 'Quantity', rot = 0)
+
+
+# Seasonal Trend the same for different categories?
+categ = order.groupby(['Month', 'Category'],as_index=False).sum()  
+c = sns.barplot(x = 'Month', y  = 'Quantity', hue = 'Category', data = categ)
+
+
+# Problem 3 
+
+# How much Profit did we lose due to returns each year?
+ret.columns.values[0] = 'Order.ID' 
+ret = returns[['Order.ID','Returned']]
+pro = order.groupby(['Order.ID','year'],as_index=False).sum()  
+p = pro[['Order.ID','year','Profit']]
+
+
+# Dropping Duplicaes
+pay = p.drop_duplicates(['Order.ID'], keep = False)
+rets = ret.drop_duplicates(['Order.ID'], keep = False)
+print pd.merge(pay, ret, on = 'Order.ID')
+
+
